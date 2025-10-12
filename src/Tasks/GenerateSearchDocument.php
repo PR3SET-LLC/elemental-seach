@@ -10,6 +10,7 @@
 namespace SilverStripers\ElementalSearch\Tasks;
 
 
+use Exception;
 use Override;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
@@ -66,7 +67,7 @@ class GenerateSearchDocument extends BuildTask
 
                 try {
                     SearchDocumentGenerator::make_document_for($record);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $output->writeln('Error processing record ' . $record->ID . ': ' . $e->getMessage());
                     return 1; // Return error code
                 }

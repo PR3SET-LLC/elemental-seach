@@ -32,35 +32,35 @@ class SearchDocumentGenerator extends Extension implements TemplateGlobalProvide
 
     public function onAfterWrite()
     {
-        if(!self::is_versioned($this->owner) && !self::$prevent_search_documents) {
-            self::make_document_for($this->owner);
+        if(!self::is_versioned($this->getOwner()) && !self::$prevent_search_documents) {
+            self::make_document_for($this->getOwner());
         }
     }
 
     public function onAfterDelete()
     {
-        if(!self::is_versioned($this->owner)) {
-            self::delete_doc($this->owner);
+        if(!self::is_versioned($this->getOwner())) {
+            self::delete_doc($this->getOwner());
         }
     }
 
     public function onAfterPublish()
     {
         if (!self::$prevent_search_documents) {
-            self::make_document_for($this->owner);
+            self::make_document_for($this->getOwner());
         }
     }
 
     public function onAfterUnpublish()
     {
-        if ($this->owner->isOnDraftOnly() && self::find_document($this->owner)) {
-            self::delete_doc($this->owner);
+        if ($this->getOwner()->isOnDraftOnly() && self::find_document($this->getOwner())) {
+            self::delete_doc($this->getOwner());
         }
     }
 
     public function onAfterArchive()
     {
-        self::delete_doc($this->owner);
+        self::delete_doc($this->getOwner());
     }
 
     public static function make_document_for(DataObject $object)

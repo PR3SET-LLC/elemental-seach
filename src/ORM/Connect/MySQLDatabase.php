@@ -174,7 +174,7 @@ class MySQLDatabase extends SS_MySQLDatabase
             }
         }
 
-        $list = new PaginatedList(new ArrayList($objects));
+        $list = PaginatedList::create(ArrayList::create($objects));
         $list->setPageStart($start);
         $list->setPageLength($pageLength);
         $list->setTotalItems($totalCount);
