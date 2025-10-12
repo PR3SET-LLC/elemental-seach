@@ -12,14 +12,15 @@ namespace SilverStripers\ElementalSearch\Tasks;
 
 use Override;
 use SilverStripe\Control\Director;
-use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\PolyExecution\PolyOutput;
 use SilverStripers\ElementalSearch\Extensions\SearchDocumentGenerator;
 use SilverStripers\ElementalSearch\Extensions\SiteTreeDocumentGenerator;
+use Symfony\Component\Console\Input\InputInterface;
 
 class GenerateSearchDocument extends BuildTask
 {
@@ -30,39 +31,53 @@ class GenerateSearchDocument extends BuildTask
     private static string $segment = 'make-search-docs';
 
     /**
-     * Implement this method in the task subclass to
-     * execute via the TaskRunner
-     *
-     * @param HTTPRequest $request
-     * @return
+     * @param InputInterface $input
+     * @param PolyOutput $output
+     * @return int Return code (0 for success, 1 for error)
      */
     #[Override]
-    public function run($request)
+    public function run(InputInterface $input, PolyOutput $output): int
+    {
+        return $this->execute($input, $output);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param PolyOutput $output
+     * @return int Return code (0 for success, 1 for error)
+     */
+    public function execute(InputInterface $input, PolyOutput $output): int
     {
         $eol = Director::is_cli() ? PHP_EOL . PHP_EOL : '<br>';
         set_time_limit(50000);
         $classes = $this->getAllSearchDocClasses();
+        
         foreach ($classes as $class) {
             foreach ($list = DataList::create($class) as $record) {
-				$output = sprintf(
-						'Making record for %s type %s, link %s',
-						$record->getTitle(),
-						$record->ClassName,
-						ClassInfo::hasMethod($record, 'getGenerateSearchLink') ? $record->getGenerateSearchLink() : $record->Title);
+                $output = sprintf(
+                    'Making record for %s type %s, link %s',
+                    $record->getTitle(),
+                    $record->ClassName,
+                    ClassInfo::hasMethod($record, 'getGenerateSearchLink') ? $record->getGenerateSearchLink() : $record->Title
+                );
 
                 $output .= $eol;
-
                 echo $output;
-				try {
-					SearchDocumentGenerator::make_document_for($record);
-				} catch (Exception) {
-				}
+
+                try {
+                    SearchDocumentGenerator::make_document_for($record);
+                } catch (\Exception $e) {
+                    $output->writeln('Error processing record ' . $record->ID . ': ' . $e->getMessage());
+                    return 1; // Return error code
+                }
             }
         }
-        echo 'Completed';
+        
+        echo 'Completed' . $eol;
+        return 0; // Success
     }
 
-    public function getAllSearchDocClasses()
+    public function getAllSearchDocClasses(): array
     {
         $list = [];
         foreach (ClassInfo::subclassesFor(DataObject::class) as $class) {
