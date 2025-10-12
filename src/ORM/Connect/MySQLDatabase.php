@@ -9,29 +9,24 @@
 
 namespace SilverStripers\ElementalSearch\ORM\Connect;
 
-use DNADesign\Elemental\Models\BaseElement;
-use DNADesign\Elemental\Models\ElementalArea;
+use Override;
+use SilverStripe\Model\List\PaginatedList;
+use SilverStripe\Model\List\ArrayList;
 use Exception;
 use SilverStripe\Assets\File;
-use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Convert;
-use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\DB;
-use SilverStripe\ORM\PaginatedList;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\ORM\Connect\MySQLDatabase as SS_MySQLDatabase;
-use SilverStripe\Versioned\Versioned;
 use SilverStripers\ElementalSearch\Model\SearchDocument;
-use SilverStripers\ElementalSearch\ORM\Search\FulltextSearchable;
 
 
 
 class MySQLDatabase extends SS_MySQLDatabase
 {
 
+    #[Override]
     public function searchEngine(
         $classesToSearch,
         $keywords,
@@ -56,7 +51,7 @@ class MySQLDatabase extends SS_MySQLDatabase
         $keywords = $this->escapeString($keywords);
         $htmlEntityKeywords = htmlentities($keywords, ENT_NOQUOTES, 'UTF-8');
 
-        $extraFilters = array($documentClass => '', $fileClass => '');
+        $extraFilters = [$documentClass => '', $fileClass => ''];
 
         $boolean = '';
         if ($booleanSearch) {
@@ -95,8 +90,8 @@ class MySQLDatabase extends SS_MySQLDatabase
             $match[$fileClass] = "MATCH (Name, Title) AGAINST ('$keywords' $boolean) AND ClassName = '$fileClassSQL'";
 
             // We make the relevance search by converting a boolean mode search into a normal one
-            $relevanceKeywords = str_replace(array('*', '+', '-'), '', $keywords);
-            $htmlEntityRelevanceKeywords = str_replace(array('*', '+', '-'), '', $htmlEntityKeywords);
+            $relevanceKeywords = str_replace(['*', '+', '-'], '', $keywords);
+            $htmlEntityRelevanceKeywords = str_replace(['*', '+', '-'], '', $htmlEntityKeywords);
             $relevance[$documentClass] = "MATCH (Title, Content) "
                 . "AGAINST ('$relevanceKeywords') "
                 . "+ MATCH (Title, Content) AGAINST ('$htmlEntityRelevanceKeywords')";
@@ -107,8 +102,8 @@ class MySQLDatabase extends SS_MySQLDatabase
         }
 
         // Generate initial DataLists and base table names
-        $lists = array();
-        $sqlTables = array($documentClass => '', $fileClass => '');
+        $lists = [];
+        $sqlTables = [$documentClass => '', $fileClass => ''];
         foreach ($classesToSearch as $class) {
             $lists[$class] = DataList::create($class)->where($notMatch . $match[$class] . $extraFilters[$class]);
             $sqlTables[$class] = '"' . DataObject::getSchema()->tableName($class) . '"';
@@ -117,8 +112,8 @@ class MySQLDatabase extends SS_MySQLDatabase
         $charset = static::config()->get('charset');
 
         // Make column selection lists
-        $select = array(
-            $documentClass => array(
+        $select = [
+            $documentClass => [
                 "ClassName" => "Type",
                 "ID" => "OriginID",
                 "ParentID" => "_{$charset}''",
@@ -131,8 +126,8 @@ class MySQLDatabase extends SS_MySQLDatabase
                 "Name" => "_{$charset}''",
                 "Relevance" => $relevance[$documentClass],
                 "CanViewType" => "NULL"
-            ),
-            $fileClass => array(
+            ],
+            $fileClass => [
                 "ClassName",
                 "{$sqlTables[$fileClass]}.\"ID\"",
                 "ParentID",
@@ -145,12 +140,12 @@ class MySQLDatabase extends SS_MySQLDatabase
                 "Name",
                 "Relevance" => $relevance[$fileClass],
                 "CanViewType" => "NULL"
-            ),
-        );
+            ],
+        ];
 
         // Process and combine queries
-        $querySQLs = array();
-        $queryParameters = array();
+        $querySQLs = [];
+        $queryParameters = [];
         $totalCount = 0;
         foreach ($lists as $class => $list) {
             /** @var SQLSelect $query */
@@ -159,7 +154,7 @@ class MySQLDatabase extends SS_MySQLDatabase
             // There's no need to do all that joining
             $query->setFrom($sqlTables[$class]);
             $query->setSelect($select[$class]);
-            $query->setOrderBy(array());
+            $query->setOrderBy([]);
 
             $querySQLs[] = $query->sql($parameters);
             $queryParameters = array_merge($queryParameters, $parameters);
@@ -170,7 +165,7 @@ class MySQLDatabase extends SS_MySQLDatabase
 
         // Get records
         $records = $this->preparedQuery($fullQuery, $queryParameters);
-        $objects = array();
+        $objects = [];
         foreach ($records as $record) {
             $object = DataList::create($record['ClassName'])->byID($record['ID']);
             if ($object && $object->canView()) {
@@ -196,12 +191,12 @@ class MySQLDatabase extends SS_MySQLDatabase
         $content = str_replace('&nbsp;', ' ', $content); // &nbsp; is not playing well with spaces
         $content = preg_replace('/\xc2\xa0/', '', $content);
         $content = preg_replace('/\s+/', ' ', html_entity_decode($content));
-        $content = trim($content);
+        $content = trim((string) $content);
 
         $length = mb_strlen($content);
         $words = preg_split(
             '/[^\p{L}\p{N}\p{Pc}\p{Pd}@]+/u',
-            mb_strtolower($keywords),
+            mb_strtolower((string) $keywords),
             -1,
             PREG_SPLIT_NO_EMPTY
         );
@@ -267,11 +262,11 @@ class MySQLDatabase extends SS_MySQLDatabase
     {
         $occurences = [];
         foreach ($words as $word) {
-            $length = mb_strlen($word);
-            $occurence = mb_stripos($content, $word);
+            $length = mb_strlen((string) $word);
+            $occurence = mb_stripos((string) $content, (string) $word);
             while ($occurence !== false) {
                 $occurences[] = $occurence;
-                $occurence = mb_stripos($content, $word, $occurence + $length);
+                $occurence = mb_stripos((string) $content, (string) $word, $occurence + $length);
             }
         }
         $occurences = array_unique($occurences);

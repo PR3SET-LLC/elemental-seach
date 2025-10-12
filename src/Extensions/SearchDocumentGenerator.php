@@ -9,15 +9,13 @@
 
 namespace SilverStripers\ElementalSearch\Extensions;
 
-use \Exception;
-use SilverStripe\Control\Director;
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\TemplateGlobalProvider;
 use SilverStripers\ElementalSearch\Model\SearchDocument;
 
-class SearchDocumentGenerator extends DataExtension implements TemplateGlobalProvider
+class SearchDocumentGenerator extends Extension implements TemplateGlobalProvider
 {
 
     private static $prevent_search_documents = false;
@@ -112,8 +110,8 @@ class SearchDocumentGenerator extends DataExtension implements TemplateGlobalPro
     {
         $doc = self::find_document($object);
         if(!$doc) {
-            $doc = new SearchDocument([
-                'Type' => get_class($object),
+            $doc = SearchDocument::create([
+                'Type' => $object::class,
                 'OriginID' => $object->ID
             ]);
             $doc->write();
@@ -124,7 +122,7 @@ class SearchDocumentGenerator extends DataExtension implements TemplateGlobalPro
     public static function find_document(DataObject $object)
     {
         $doc = SearchDocument::get()->filter([
-            'Type' => get_class($object),
+            'Type' => $object::class,
             'OriginID' => $object->ID
         ])->first();
         return $doc;

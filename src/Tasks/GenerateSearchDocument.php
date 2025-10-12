@@ -10,6 +10,7 @@
 namespace SilverStripers\ElementalSearch\Tasks;
 
 
+use Override;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\ClassInfo;
@@ -17,7 +18,6 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
-use SilverStripers\ElementalSearch\Extensions\ElementDocumentGeneratorExtension;
 use SilverStripers\ElementalSearch\Extensions\SearchDocumentGenerator;
 use SilverStripers\ElementalSearch\Extensions\SiteTreeDocumentGenerator;
 
@@ -37,6 +37,7 @@ class GenerateSearchDocument extends BuildTask
      * @param HTTPRequest $request
      * @return
      */
+    #[Override]
     public function run($request)
     {
         $eol = Director::is_cli() ? PHP_EOL . PHP_EOL : '<br>';
@@ -55,7 +56,7 @@ class GenerateSearchDocument extends BuildTask
                 echo $output;
 				try {
 					SearchDocumentGenerator::make_document_for($record);
-				} catch (Exception $e) {
+				} catch (Exception) {
 				}
             }
         }

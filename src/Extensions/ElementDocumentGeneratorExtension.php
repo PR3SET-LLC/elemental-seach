@@ -9,8 +9,7 @@
 
 namespace SilverStripers\ElementalSearch\Extensions;
 
-use DNADesign\Elemental\Models\BaseElement;
-use SilverStripe\Core\Config\Config;
+use Override;
 use SilverStripers\ElementalSearch\Model\SearchDocument;
 
 class ElementDocumentGeneratorExtension extends SearchDocumentGenerator
@@ -24,16 +23,19 @@ class ElementDocumentGeneratorExtension extends SearchDocumentGenerator
         return $page ? $page->Link() : null;
     }
 
+    #[Override]
     public function onAfterWrite()
     {
         return null;
     }
 
+    #[Override]
     public function onAfterDelete()
     {
         return null;
     }
 
+    #[Override]
     public function onAfterPublish()
     {
         if ($this->isThisAStandAloneClass()) {
@@ -49,6 +51,7 @@ class ElementDocumentGeneratorExtension extends SearchDocumentGenerator
         return null;
     }
 
+    #[Override]
     public function onAfterArchive()
     {
         if ($this->isThisAStandAloneClass()) {
@@ -71,7 +74,7 @@ class ElementDocumentGeneratorExtension extends SearchDocumentGenerator
 
     private function isThisAStandAloneClass()
     {
-        if (($classes = $this->getStandAloneElementClasses()) && in_array(get_class($this->owner), $classes)) {
+        if (($classes = $this->getStandAloneElementClasses()) && in_array($this->owner::class, $classes)) {
             return true;
         }
         return false;
