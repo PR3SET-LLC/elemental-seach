@@ -23,12 +23,11 @@ use SilverStripers\ElementalSearch\Extensions\SiteTreeDocumentGenerator;
 
 class GenerateSearchDocument extends BuildTask
 {
+    protected string $title = 'Re-generate all search documents';
 
-    protected $title = 'Re-generate all search documents';
+    protected static string $description = 'Generate search documents for items.';
 
-    protected $description = 'Generate search documents for items.';
-
-    private static $segment = 'make-search-docs';
+    private static string $segment = 'make-search-docs';
 
     /**
      * Implement this method in the task subclass to
