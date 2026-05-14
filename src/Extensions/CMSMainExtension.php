@@ -26,7 +26,7 @@ class CMSMainExtension extends Extension
     {
         $record = $this->getOwner()->getRecord($this->getOwner()->getRequest()->param('ID'));
 
-        if(!$record->isOnDraftOnly() && self::config()->get('display_create_button')){
+        if($record && !$record->isOnDraftOnly() && self::config()->get('display_create_button')){
             $form->Actions()->insertAfter('action_publish',
                 FormAction::create('makeSearch', 'Create Search Doc')
                     ->setUseButtonTag(true)
