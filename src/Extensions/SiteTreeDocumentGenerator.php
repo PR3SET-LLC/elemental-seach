@@ -9,6 +9,7 @@
 
 namespace SilverStripers\ElementalSearch\Extensions;
 
+use Exception;
 use Override;
 use SilverStripe\Control\Director;
 use SilverStripe\Versioned\Versioned;

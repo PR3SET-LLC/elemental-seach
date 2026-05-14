@@ -70,9 +70,6 @@ class SearchDocument extends DataObject
             if ($isSiteTree || $hasSearchLink) {
                 $searchLink = $origin->getGenerateSearchLink();
                 $bypassElemental = self::config()->get('use_only_x_path');
-                if (!$bypassElemental) {
-                    $bypassElemental = self::config()->get('use_only_x_path');
-                }
 
                 if (!$bypassElemental) {
                     $useElemental = false;
@@ -147,8 +144,8 @@ class SearchDocument extends DataObject
             }
 
             $this->Title = $origin->getTitle();
-            if ($this->Origin()->hasMethod('updateSearchContents')) {
-                $this->Origin()->updateSearchContents($contents);
+            if ($origin->hasMethod('updateSearchContents')) {
+                $origin->updateSearchContents($contents);
             }
             if ($contents) {
                 $contents = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $contents);
