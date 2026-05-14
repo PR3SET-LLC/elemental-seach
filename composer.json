@@ -18,6 +18,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
+        "php": "^8.3",
         "dnadesign/silverstripe-elemental": "*"
     },
     "replace": {
@@ -28,9 +29,18 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-5.x": "5.x-dev"
+            "dev-6.x": "6.x-dev"
         },
         "expose": [],
         "installer-name": "elemental-search"
+    },
+    "require-dev": {
+        "wernerkrauss/silverstripe-rector": "1"
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "silverstripe/vendor-plugin": true
+        }
     }
 }

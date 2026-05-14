@@ -9,6 +9,7 @@
 
 namespace SilverStripers\ElementalSearch\CMS\Search;
 
+use Override;
 use BadMethodCallException;
 use SilverStripe\Assets\File;
 use SilverStripe\CMS\Search\SearchForm as SS_SearchForm;
@@ -17,14 +18,15 @@ use SilverStripers\ElementalSearch\Model\SearchDocument;
 class SearchForm extends SS_SearchForm
 {
 
-    protected $classesToSearch = array(
+    protected $classesToSearch = [
         SearchDocument::class,
         File::class
-    );
+    ];
 
-	public function classesToSearch($classes)
+	#[Override]
+    public function classesToSearch($classes)
 	{
-		$supportedClasses = array(SearchDocument::class, File::class);
+		$supportedClasses = [SearchDocument::class, File::class];
         if(empty($classes)){
             $classes = $supportedClasses;
         }

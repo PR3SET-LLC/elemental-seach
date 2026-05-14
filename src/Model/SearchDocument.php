@@ -10,6 +10,9 @@
 
 namespace SilverStripers\ElementalSearch\Model;
 
+use Exception;
+use DOMDocument;
+use DOMXPath;
 use DNADesign\Elemental\Models\ElementalArea;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
@@ -67,13 +70,10 @@ class SearchDocument extends DataObject
             if ($isSiteTree || $hasSearchLink) {
                 $searchLink = $origin->getGenerateSearchLink();
                 $bypassElemental = self::config()->get('use_only_x_path');
-                if (!$bypassElemental) {
-                    $bypassElemental = self::config()->get('use_only_x_path');
-                }
 
                 if (!$bypassElemental) {
                     $useElemental = false;
-                    foreach ($origin->hasOne() as $key => $class) {
+                    foreach ($origin->hasOne() as $class) {
                         if ($class == ElementalArea::class) {
                             $useElemental = true;
                         }
@@ -90,7 +90,7 @@ class SearchDocument extends DataObject
                         /** @var ElementalArea $area */
                         $area = $origin->$key();
                         if ($area && $area->exists()) {
-                            $output[] = $area->forTemplate()->forTemplate();
+                            $output[] = $area->forTemplate();
                         }
                     }
                 } else {
@@ -144,22 +144,22 @@ class SearchDocument extends DataObject
             }
 
             $this->Title = $origin->getTitle();
-            if ($this->Origin()->hasMethod('updateSearchContents')) {
-                $this->Origin()->updateSearchContents($contents);
+            if ($origin->hasMethod('updateSearchContents')) {
+                $origin->updateSearchContents($contents);
             }
             if ($contents) {
                 $contents = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $contents);
                 $this->Content = $contents;
             }
             $this->write();
-        } catch (\Exception $e) {
+        } catch (Exception) {
         } finally {
             // Reset theme if an exception occurs, if you don't have a
             // try / finally around code that might throw an Exception,
             // CMS layout can break on the response. (SilverStripe 4.1.1)
             SSViewer::set_themes($oldThemes);
         }
-        return implode($output);
+        return implode('', $output);
     }
 
     /**
@@ -171,10 +171,10 @@ class SearchDocument extends DataObject
     {
         $contents = '';
         if ($html) {
-            $domDoc = new \DOMDocument();
+            $domDoc = new DOMDocument();
             @$domDoc->loadHTML($html);
 
-            $finder = new \DOMXPath($domDoc);
+            $finder = new DOMXPath($domDoc);
             $nodes = $finder->query("//*[contains(@class, '$xPath')]");
             $nodeValues = [];
             if ($nodes->length) {
@@ -182,7 +182,7 @@ class SearchDocument extends DataObject
                     $nodeValues[] = $node->nodeValue;
                 }
             } else {
-                $contents = strip_tags($html);
+                $contents = strip_tags((string) $html);
             }
             $contents = implode("\n\n", $nodeValues);
         }
@@ -191,7 +191,7 @@ class SearchDocument extends DataObject
 
     function removeEmptyLines($string)
     {
-        return preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $string);
+        return preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", (string) $string);
     }
 
 }
